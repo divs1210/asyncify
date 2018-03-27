@@ -2,44 +2,32 @@
   (:require [asyncify.core :as ac]
             [asyncify.test-utils :as atu]
             [clojure.core.async :as as]
-            [clojure.test :refer :all]))
+            [clojure.test :refer :all]
+            [com.climate.claypoole :as cp]))
 
 ;; function under test
-(defn expensive-fn []
-  (Thread/sleep 1000)
-  (rand-int 100))
+(defn get-name [id]
+  (Thread/sleep 500)
+  (str "name_" id))
+
+(defonce pool
+  (cp/threadpool 2))
+
+(defonce a:get-name
+  (ac/asyncify get-name pool))
 
 
 (deftest core-tests
-  ;; sync
-  (let [[res time] (atu/time+
-                    (doall (repeatedly 5 expensive-fn)))]
-    (is (= 5 (count res)))
-    (println "sync took" time "ms for 5 calls")
-    (println "results:" res))
-
-  (println "=====")
-
-  ;; async on default pool
-  (let [async-fn (ac/asyncify expensive-fn)
-        [res time] (atu/time+
-                    (doall (repeatedly 5 async-fn)))]
-    (is (= 5 (count res)))
-    (println "async on default pool took" time "ms for 5 calls")
-    (let [[res time] (atu/time+
-                      (mapv #(as/<!! %) res))]
-      (println "results:" res)
-      (println "actual time:" time "ms")))
-
-  (println "=====")
-
-  ;; async on custom pool
-  (let [async-fn (ac/asyncify expensive-fn 5)
-        [res time] (atu/time+
-                    (doall (repeatedly 5 async-fn)))]
-    (is (= 5 (count res)))
-    (println "async on custom pool took" time "ms for 5 calls")
-    (let [[res time] (atu/time+
-                      (mapv #(as/<!! %) res))]
-      (println "results:" res)
-      (println "actual time:" time "ms"))))
+  (let [res-chan (as/chan 10)
+        _ (doseq [i (range 10)
+                  :let [name-chan (a:get-name i)]]
+            (as/go
+              (as/>! res-chan
+                     (as/<! name-chan))))
+        time (atu/time+
+              (dotimes [_ 10]
+                (as/<!! res-chan)))]
+    (is (< time 5000)
+        "asyncified fn runs on the given threadpool")
+    (println "Time taken:" time "ms")
+    (as/close! res-chan)))

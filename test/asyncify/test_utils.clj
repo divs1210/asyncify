@@ -2,10 +2,9 @@
 
 (defn time* [f]
   (let [start (System/currentTimeMillis)
-        result (f)
+        _ (f)
         end (System/currentTimeMillis)]
-    [result
-     (- end start)]))
+    (- end start)))
 
 (defmacro time+ [& body]
   `(time*
