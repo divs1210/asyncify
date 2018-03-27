@@ -45,8 +45,7 @@ Now our code becomes:
 ```
 
 Let's see what we did there:
-* Used `asyncify` to ceate an event-driven version of `get-name` that runs on `core.async`'s threadpool,
-unless one is explicitly supplied, for eg:
+* Used `asyncify` to ceate an event-driven version of `get-name` that runs on `core.async`'s threadpool. We can also supply a threadpool explicitly:
 ```clojure
 (def pool
   (com.climate.claypoole/threadpool 3))
