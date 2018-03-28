@@ -18,16 +18,17 @@
 
 
 (deftest core-tests
-  (let [res-chan (as/chan 10)
-        _ (doseq [i (range 10)
+  (let [n 10
+        res-chan (as/chan n)
+        _ (doseq [i (range n)
                   :let [name-chan (a:get-name i)]]
             (as/go
               (as/>! res-chan
                      (as/<! name-chan))))
         time (atu/time+
-              (dotimes [_ 10]
+              (dotimes [_ n]
                 (as/<!! res-chan)))]
     (is (< time 5000)
         "asyncified fn runs on the given threadpool")
-    (println "Time taken:" time "ms")
+    (println "Time taken to run" n "queries (500 ms/query):" time "ms")
     (as/close! res-chan)))
