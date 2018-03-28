@@ -27,8 +27,8 @@
             (execute f args out-chan))
           (cp/future
             pool
-            (execute f args out-chan)))))
-    (recur)))
+            (execute f args out-chan))))
+      (recur))))
 
 
 (defn asyncify
