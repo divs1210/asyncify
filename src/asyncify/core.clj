@@ -19,14 +19,15 @@
 
 
 (defonce event-loop
-  (a/go-loop []
-    (let [[pool f args out-chan] (a/<! in-chan)]
-      (if (= :builtin pool)
-        (a/go
-          (execute f args out-chan))
-        (cp/future
-          pool
-          (execute f args out-chan))))
+  (a/thread
+    (loop []
+      (let [[pool f args out-chan] (a/<!! in-chan)]
+        (if (= :builtin pool)
+          (a/go
+            (execute f args out-chan))
+          (cp/future
+            pool
+            (execute f args out-chan)))))
     (recur)))
 
 
