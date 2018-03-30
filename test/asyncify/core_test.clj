@@ -5,9 +5,11 @@
             [clojure.test :refer :all]
             [com.climate.claypoole :as cp]))
 
+(def ^:const WAIT-MS 500)
+
 ;; function under test
 (defn get-name [id]
-  (Thread/sleep 500)
+  (Thread/sleep WAIT-MS)
   (str "name_" id))
 
 (defonce pool
@@ -28,7 +30,7 @@
         time (atu/time+
               (dotimes [_ n]
                 (as/<!! res-chan)))]
-    (is (< time 5000)
+    (is (< time (* n WAIT-MS))
         "asyncified fn runs on the given threadpool")
-    (println "Time taken to run" n "queries (500 ms/query):" time "ms")
+    (println "Time taken to run" n "queries @" WAIT-MS "ms/query:" time "ms")
     (as/close! res-chan)))
