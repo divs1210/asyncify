@@ -1,6 +1,6 @@
 # asyncify
 
-A Clojure library for converting legacy blocking io into event-driven io.
+An event loop library for Clojure
 
 ## Usage
 
@@ -47,18 +47,20 @@ Now our code becomes:
 Let's see what we did there:
 * Used `asyncify` to ceate an event-driven version of `get-name` that runs on `core.async`'s threadpool. We can also supply a threadpool explicitly:
 ```clojure
-(def pool
-  (com.climate.claypoole/threadpool 3))
+(require '[com.climate.claypoole :as cp])
 
-(def a:f 
-  (asyncify f pool))
+(def pool
+  (cp/threadpool 3))
+
+(def a:get-name
+  (asyncify get-name pool))
 ```
 * Called the async version of `get-name` instead of the original
 * Moved code after the call to `a:get-name` into a `go` block
 
 ## License
 
-Copyright © 2018 FIXME
+Copyright © 2018 Divyansh Prakash
 
 Distributed under the Eclipse Public License either version 1.0 or (at
 your option) any later version.
