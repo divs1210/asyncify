@@ -42,7 +42,8 @@
    (asyncify f :builtin))
   ([f threadpool]
    {:pre [(fn? f)
-          (cp/threadpool? threadpool)]}
+          (or (cp/threadpool? threadpool)
+              (= :builtin threadpool))]}
    (fn [& args]
      (let [out-chan (a/chan)]
        (a/go
